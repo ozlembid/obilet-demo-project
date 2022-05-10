@@ -1,0 +1,223 @@
+﻿@model BusLocationViewModel
+<style>
+    .bootstrap-select {
+        width: 100% !important;
+    }
+
+    .btnn {
+        background-color: gray;
+        border: none;
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+        border-radius: 25px;
+    }
+
+    #txtDate {
+        background: url('images/calendar.gif') no-repeat;
+        border: 1px solid #ccc;
+        height: 18px;
+        width: 100px;
+        padding-left: 25px;
+    }
+</style>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-3"></div>
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" asp-controller="Journey" asp-action="Index" class="card-body">
+                        <div class="row">
+                            <div class="col-lg-1">
+                                <i class="fa fa-location-arrow"></i>
+
+                            </div>
+                            <div class="col-lg-11">
+                                <select class="form-control cities" name="fromBusLocationId" id="fromBusLocationId" title="İl veya ilçe adı yazın">
+                                    @if (Model.BusLocationList != null && Model.BusLocationList.Count > 0)
+                                    {
+                        @foreach (var item in Model.BusLocationList)
+                        {
+                            if (Model.FromCity.HasValue && Model.FromCity.Value == item.Id)
+                            {
+        <option value=@item.Id selected="">@item.Name</option>
+ }
+    else
+    {
+<option value=@item.Id>@item.Name</option>
+}
+
+}}
+                                </select>
+                                <label class="frombuslocationvalidation" style="display:none">Şehir alanı seçmelisiniz...</label>
+
+                                <br />
+                            </div>
+                        </div>
+
+                        <div style="margin-left: 85% "><button type="button" class="btn btnn btn-sm " id="swap" style=" margin-top: 0;margin-bottom:0">&nbsp;<i class="fa  fa-arrows-v"></i>&nbsp;</button></div>
+
+                        <div class="row">
+                            <div class="col-lg-1">
+                                <i class="fa fa-location-arrow"></i>
+
+                            </div>
+                            <div class="col-lg-11">
+                                <select class="form-control cities" name="toBusLocationId" id="toBusLocationId" title="İl veya ilçe adı yazın">
+
+                                    @if (Model.BusLocationList != null && Model.BusLocationList.Count > 0)
+                                    {
+                        @foreach (var item in Model.BusLocationList)
+                        {
+                            if (Model.ToCity.HasValue && Model.ToCity.Value == item.Id)
+                            {
+        <option value=@item.Id selected="">@item.Name</option> }
+                            else
+                            {
+        <option value=@item.Id>@item.Name</option>}
+
+                        }}
+                                </select>
+
+                                <label class="tobuslocationvalidation" style="display:none">Şehir alanı seçmelisiniz...</label>
+                            </div>
+
+
+                        </div>
+                        <br />
+                        <div class="row">
+                            <div class="col-lg-9">
+                                <div style="width : 100%">
+                                    <i class="fa fa-calendar"></i>
+                                    <input type="text" name="date" id="date" class="datePicker" required />
+                                </div>
+                            </div>
+
+                            <div class="col-lg-3">
+                                <button type="button" class="btn btn-outline-dark btn-sm" id="today" style="margin-bottom: 2px; padding-top: 1px; padding-bottom: 1px;">Bugün</button><br />
+                                <button type="button" class="btn btn-outline-dark btn-sm" id="tomorrow" style=" padding-top: 1px; padding-bottom: 1px;">&nbsp;Yarın&nbsp;&nbsp;</button>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block" id="FoundTickets" style=" margin: 10px;">Bileti Bul</button>
+                        <p>Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in</p>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4"></div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        var date = new Date();
+
+        $('.datePicker').datepicker({
+            clearBtn: false,
+            format: "dd.mm.yyyy",
+            startDate: new Date(),
+            autoclose: true
+        });
+        $('.datePicker').datepicker('setDate', date);
+        $('#today').css("background-color", "grey");
+        $('#tomorrow').css("background-color", "white");
+
+        $('#today').on('click', function () {
+            $('.datePicker').datepicker('setDate', date);
+            $('#today').css("background-color", "grey");
+            $('#tomorrow').css("background-color", "white");
+
+        });
+
+        $('#tomorrow').on('click', function () {
+            $('.datePicker').datepicker('setDate', new Date(date.getFullYear(), date.getMonth(), (date.getDate() + 1)));
+
+            $('#today').css("background-color", "white");
+            $('#tomorrow').css("background-color", "grey");
+
+        });
+
+        $('#swap').on('click', function () {
+            debugger;
+
+            var co=$("#fromBusLocationId").val();
+            $("#fromBusLocationId").val($("#toBusLocationId").val());
+            $("#toBusLocationId").val(co);
+
+          
+        });
+
+        $('.cities').on('change', function () {
+            debugger
+            if ($("#fromBusLocationId").val() == $("#toBusLocationId").val()) {
+              alert("Kalkış ve varış noktaları aynı olamaz");
+                $('#FoundTickets').attr('disabled', 'disabled');
+            }
+            else {
+                $('#FoundTickets').removeAttr('disabled');
+            }
+
+
+        });
+
+        $('#fromBusLocationId').on('loaded.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            $(".fromBusLocationId .bs-searchbox input").on('keyup', function () {
+
+
+                var search = $(this).val();
+
+
+                $.ajax({
+                    url: 'Home/Search',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { 'Search': search },
+                    success: function (data) {
+
+                        $('#fromBusLocationId').html(data.object).selectpicker('refresh');
+                    }
+                });
+            });
+        });
+
+        $('#toBusLocationId').on('loaded.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+            $(".toBusLocationId .bs-searchbox input").on('keyup', function () {
+                var search = $(this).val();
+                $.ajax({
+                    url: 'Home/Search',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { 'Search': search },
+                    success: function (data) {
+
+                        $('#toBusLocationId').html(data.object).selectpicker('refresh');
+                    }
+                });
+            });
+        });
+
+
+        $("#submit").click(function () {
+            debugger;
+            var a = $("#fromBusLocationId option:selected").val();
+            var b = $("#toBusLocationId option:selected").val();
+            if (a == "" && b == "") {
+                $("#frombuslocationvalidation").show();
+                $("#tobuslocationvalidation").show();
+                return false;
+            }
+            else if (a == "") {
+                $("#frombuslocationvalidation").show();
+                $("#tobuslocationvalidation").hide();
+                return false;
+            }
+            else if (b == "") {
+                $("#tobuslocationvalidation").show();
+                $("#frombuslocationvalidation").hide();
+                return false;
+            }
+        });
+    });
+</script>
+
